@@ -11,3 +11,19 @@ def setup_driver():
     options.add_experimental_option("prefs",prefs)
     driver = webdriver.Chrome(options=options)
     return driver
+
+def scrap_and_process_data(driver):
+    # telling automated browser to open AEP
+    driver.get(DASHBOARD_URL)
+    
+    # direct the robot browser 
+    CONTAINER_SELECTOR = ".visualisation-card"
+    TITLE_SELECTOR = ".visualisation-title"
+    DOWNLOAD_ICON_SELECTOR = ".download-section"
+    CSV_BUTTON_SELECTOR = 'a[data-type="csv"]'
+    
+    # finding all indicators
+    indicator_containers = wait.until(...)
+    
+    # loop through each indicator one by one 
+    for container in indicator_containers:
