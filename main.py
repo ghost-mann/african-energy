@@ -26,4 +26,14 @@ def scrap_and_process_data(driver):
     indicator_containers = wait.until(...)
     
     # loop through each indicator one by one 
-    for container in indicator_containers:
+    # for container in indicator_containers:
+
+
+def process_downloaded_file(filepath, indicator_name_raw):
+    metadata =  METADATA_MAP.get(indicator_name_raw,{})
+    df = pd.read_csv(filepath, skiprows=1)
+    
+    df['metric'] = metadata.get('metric_name', indicator_name_raw)
+    
+    return df[FINAL_SCHEMA_COLUMNS]
+
