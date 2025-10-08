@@ -1,7 +1,8 @@
 import os 
 import time 
 import pandas as pd
-import re 
+import re
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -9,6 +10,34 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+
+load_dotenv()
+mongo_url = os.getenv('mongo_url')
+db_name = os.getenv('mongo_db_name')
+collection_name = os.getenv('energy_indicator')
+
+DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
+if not os.path.exists(DOWNLOAD_DIR):
+    os.makedirs(DOWNLOAD_DIR)
+    
+DASHBOARD_URL = "https://africa-energy-portal.org/database"
+
+METADATA_MAP = {
+    "Access to electricity, urban (% of urban population)": {
+        "metric_name": "Access to electricity, urban", "unit": "% of urban population",
+        "sector": "Energy", "sub_sector": "Electricity", "sub_sub_sector": "Access",
+        "source": "World Bank", "source_link": DASHBOARD_URL
+    },
+    "Access to electricity, rural (% of rural population)": {
+        "metric_name": "Access to electricity, rural", "unit": "% of rural population",
+        "sector": "Energy", "sub_sector": "Electricity", "sub_sub_sector": "Access",
+        "source": "World Bank", "source_link": DASHBOARD_URL
+    }
+}
+
+BASE_COLUMNS = ["country", "country_serial", "metric", "unit", "sector", "sub_sector", "sub_sub_sector", "source_link", "source"]
+YEAR_COLUMNS = [str(y) for y in range(2000, 2025)]
+FINAL_SCHEMA_COLUMNS = BASE_COLUMNS + YEAR_COLUMNS
 
 def setup_driver():
     # selenium options
