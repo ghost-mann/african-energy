@@ -4,12 +4,28 @@ import pandas as pd
 import re 
 from pymongo import MongoClient
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 
 def setup_driver():
+    # selenium options
     options = webdriver.ChromeOptions()
     prefs = {"download.default_directory": DOWNLOAD_DIR}
     options.add_experimental_option("prefs",prefs)
-    driver = webdriver.Chrome(options=options)
+    
+    # for linux
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    
+    # web-driver manager downloads driver
+    # selenium uses path to start driver
+    service = ChromeService(ChromeDriverManager().install())
+    
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.maximize_window()
     return driver
 
 def scrap_and_process_data(driver):
@@ -36,4 +52,22 @@ def process_downloaded_file(filepath, indicator_name_raw):
     df['metric'] = metadata.get('metric_name', indicator_name_raw)
     
     return df[FINAL_SCHEMA_COLUMNS]
+
+def main():
+    
+    # setup robot
+    driver = setup_driver()
+    
+    # robot does main job
+    final_df = scrap_and_process_data(driver)
+    
+    # robot quit
+    driver.quit()
+    
+    # prepare data for mongodb
+    records = final_df.to_dict('records')
+    
+    # connect to DB and insert everything
+    collection.insert_many(records)
+    
 
